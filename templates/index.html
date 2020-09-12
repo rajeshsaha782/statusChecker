@@ -1,0 +1,82 @@
+<h2>Welcome {{ name }}</h2>
+<a href="/logout">logout</a>
+
+<br/>
+<br/>
+{% csrf_token %}
+<input type="text" id="user-url"/>
+<button type="button" id="add-url">Add</button>
+<br/>
+
+
+<h3>Url list</h3>
+<button id="refresh">Refresh</button>
+<br>
+<br>
+<div>
+    {% if url_list %}
+        <table border="1">
+            <th>url</th>
+            <th>status</th>
+            {% for url in url_list %}
+                <tr>
+                    <td> {{ url.url }}</td>
+                    <td
+                            {% ifequal url.status 200 %}style="background-color: green"
+                            {% else %}style="background-color: red"{% endifequal %}
+                    >{{ url.status }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    {% else %}
+        <p>No urls are available.</p>
+    {% endif %}
+</div>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script>
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                // Does this cookie string begin with the name we want?
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        const BASE_URL = window.location.protocol + "//" + window.location.hostname + ":" + window.location.port + "/";
+
+        $("#add-url").on("click", function (e) {
+            $.ajax({
+                url: BASE_URL + "user-url/",
+                method: "POST",
+                headers: {'X-CSRFToken': getCookie('csrftoken')},
+                data: {
+                    url: $("#user-url").val()
+                },
+                success: function (response) {
+                    console.log(response);
+                    alert('Add successful');
+                    location.reload();
+                },
+                error: function (response) {
+                    console.log(response);
+                }
+
+            });
+        });
+
+        $('#refresh').click(function () {
+            location.reload();
+        });
+    });
+</script>
